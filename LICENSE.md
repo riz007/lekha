@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2026 Lekha.js Contributors
+Copyright (c) 2026 riz007 (https://github.com/riz007)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,10 +22,11 @@ SOFTWARE.
 
 ---
 
-### Attribution Note
+### Attribution & Acknowledgments
 
-Lekha.js is built upon the foundational work of the Bengali open-source community:
+This project represents a modern implementation of Bengali typing logic, featuring original architectural designs by **[riz007](https://github.com/riz007)**.
 
-1.  **bnwebtools:** Logic and mappings derived from the **Bangla Unicode Web Tools** project, created by **S M Mahbub Murshed** and **Arup Kamal**.
-2.  **Avro Phonetic:** Phonetic transliteration system and rules created by **Mehdi Hasan Khan** of **OmicronLab**. We deeply appreciate their contribution to the digital Bengali landscape.
-3.  **jsAvroPhonetic:** Modern JavaScript implementation of Avro logic, used via the `nodejs-avro-phonetic` community port.
+Lekha.js respectfully acknowledges the foundational work of:
+- **bnwebtools:** Logic and mappings by **S M Mahbub Murshed** and **Arup Kamal**.
+- **Avro Phonetic:** System and rules by **Mehdi Hasan Khan** of **OmicronLab**.
+- **jsAvroPhonetic:** Modern community implementation of Avro logic.
