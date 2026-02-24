@@ -25,29 +25,38 @@ export const LekhaInput = Extension.create<LekhaOptions>({
           handleKeyDown: (view, event) => {
             if (!engine) return false
 
-            // Ignore system keys
-            if (event.ctrlKey || event.metaKey || event.altKey) {
-              if (event.key.toLowerCase() === 'm') {
-                engine.toggleLanguage()
-                return true
-              }
-              return false
+            // 1. GLOBAL SHORTCUTS
+            
+            // Clear All Shortcut: Ctrl+Alt+C
+            if ((event.ctrlKey || event.metaKey) && event.altKey && event.key.toLowerCase() === 'c') {
+               const transaction = view.state.tr.delete(0, view.state.doc.content.size)
+               view.dispatch(transaction)
+               engine.setText('', 0)
+               engine.resetPhoneticBuffer()
+               return true
             }
 
-            if (event.key === 'Escape') {
+            // Language Toggle: Esc or Ctrl+M (Manual trigger)
+            if (event.key === 'Escape' || ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'm')) {
               engine.toggleLanguage()
+              engine.resetPhoneticBuffer()
+              // Ensure editor keeps focus
+              view.focus()
               return true
             }
 
+            // 2. LANGUAGE CHECK
+            if (engine.isEnglish.value) {
+                // Return false to let TipTap/StarterKit handle standard English typing
+                return false 
+            }
+
+            // 3. BENGALI TYPING LOGIC
             const isSingleChar = event.key.length === 1
             const isEditingKey = event.key === 'Backspace' || event.key === 'Delete'
 
             if (!isSingleChar && !isEditingKey) {
               return false
-            }
-
-            if (engine.isEnglish.value) {
-                return false 
             }
 
             const { selection, doc } = view.state
@@ -57,13 +66,7 @@ export const LekhaInput = Extension.create<LekhaOptions>({
             const textBefore = $pos.parent.textBetween(0, $pos.parentOffset)
             const textAfter = $pos.parent.textBetween($pos.parentOffset, $pos.parent.content.size)
             
-            // Check for cursor jump to reset phonetic buffer
-            if (Math.abs(engine.cursor.value - textBefore.length) > 1 && !isEditingKey) {
-               engine.resetPhoneticBuffer()
-            }
-
-            event.preventDefault()
-            
+            // Sync engine before processing
             engine.setText(textBefore + textAfter, textBefore.length)
             
             const result = engine.processKey({
@@ -76,6 +79,9 @@ export const LekhaInput = Extension.create<LekhaOptions>({
             if (!result.accepted) {
               return false
             }
+
+            // Prevent default browser behavior for handled keys
+            event.preventDefault()
 
             const startOfBlock = from - $pos.parentOffset
             const endOfBlock = startOfBlock + $pos.parent.content.size
@@ -94,7 +100,6 @@ export const LekhaInput = Extension.create<LekhaOptions>({
             return true
           },
           handleClick: (view) => {
-             // Reset phonetic buffer on click to avoid confusion
              if (engine) engine.resetPhoneticBuffer()
              return false
           }

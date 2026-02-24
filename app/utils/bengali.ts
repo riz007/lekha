@@ -26,7 +26,7 @@ const CONSONANTS = new Set([
 ])
 
 const VOWELS = new Set(['অ', 'আ', 'ই', 'ঈ', 'উ', 'ঊ', 'ঋ', 'এ', 'ঐ', 'ও', 'ঔ'])
-const KARS = new Set(['া', 'ি', 'ী', 'ু', 'ূ', 'ৃ', 'ে', 'ৈ', 'ো', 'ৌ'])
+const KARS = new Set(['া', 'ি', 'ী', 'ু', 'ূ', 'ৃ', 'ে', 'ৈ', 'ো', 'ৌ', 'ৗ'])
 const PRE_KARS = new Set(['ি', 'ে', 'ৈ'])
 
 export function splitClusters(text: string): string[] {
@@ -135,25 +135,12 @@ export function toKar(vowel: string): string {
   return map[vowel] ?? vowel
 }
 
-export function reorderSimplePreKar(text: string): string {
-  // 1. Normalize stand-alone অ + া to আ
-  let result = text.replace(/অা/g, 'আ')
-
-  // 2. REPH REORDERING (র্ + Consonant Cluster -> Cluster + র্)
-  // Unicode standard: REPH is logically BEFORE the cluster. 
-  // But many legacy fixed engines and users expect it to behave as 
-  // 'A' + 'j' -> 'র্ক'. In Unicode, 'র্ক' is logically \u09B0 + \u09CD + \u0995.
-  // So 'র্' + 'ক' is already 'র্ক'. No reordering needed for basic Reph.
-  
-  // 3. PRE-KAR REORDERING (ি/ে/ৈ + Consonant Cluster -> Cluster + ি/ে/ৈ)
-  // 'ে' + 'ক' -> 'কে'
-  result = result.replace(/([িেৈ])([ক-হড়ঢ়য়ৎ]([্][ক-হড়ঢ়য়ৎ])*)/g, '$2$1')
-  
-  // 4. Composite Kars: ে + া -> ো, ে + ৗ -> ৌ
-  result = result.replace(/ে([ক-হড়ঢ়য়ৎ]([্][ক-হড়ঢ়য়ৎ])*)া/g, '$1ো')
-  result = result.replace(/ে([ক-হড়ঢ়য়ৎ]([্][ক-হড়ঢ়য়ৎ])*)ৗ/g, '$1ৌ')
-  
-  return result
+export function toVowel(kar: string): string {
+  const map: Record<string, string> = {
+    'া': 'আ', 'ি': 'ই', 'ী': 'ঈ', 'ু': 'উ', 'ূ': 'ঊ', 
+    'ৃ': 'ঋ', 'ে': 'এ', 'ৈ': 'ঐ', 'ো': 'ও', 'ৌ': 'ঔ', 'ৗ': 'ঔ'
+  }
+  return map[kar] ?? kar
 }
 
 export function atomicCursor(text: string, cursor: number): number {

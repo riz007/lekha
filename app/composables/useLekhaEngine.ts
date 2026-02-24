@@ -7,8 +7,8 @@ import {
   isBanglaKar,
   isBanglaVowel,
   isPreKar,
-  reorderSimplePreKar,
   toKar,
+  toVowel,
 } from '../utils/bengali'
 import { getAvroParserSync, resolveAvroParser } from '../utils/avro-parser'
 import type {
@@ -23,6 +23,7 @@ export type UseLekhaEngine = ReturnType<typeof useLekhaEngine>
 
 interface InternalState {
   lastBanglaChar: string
+  activePreKar: string
   avroAWaiting: boolean
   avroChaToggle: boolean
   avroRomanText: string
@@ -45,7 +46,6 @@ function applyAvroModification(
     state.avroChaToggle = false
   }
 
-  // Double-Hasant rule (,,)
   if (prev === '্' && next === '্') {
     return { text: '্', replacePrevious: false }
   }
@@ -86,7 +86,6 @@ function applyAvroModification(
     }
   }
 
-  // Zaphala vs Ya rule
   if (isBanglaConsonant(prev) && next === 'য') {
       return { text: '্য', replacePrevious: false }
   }
@@ -115,7 +114,6 @@ function applyAvroModification(
     }
   }
 
-  // Hasant logic
   if (isBanglaConsonant(prev) && isBanglaConsonant(next) && !state.avroAWaiting) {
     return {
       text: `্${next}`,
@@ -171,6 +169,7 @@ export function useLekhaEngine(initialLayout: LayoutId = 'bijoy', initialText = 
 
   const internal = reactive<InternalState>({
     lastBanglaChar: '',
+    activePreKar: '',
     avroAWaiting: false,
     avroChaToggle: false,
     avroRomanText: '',
@@ -186,6 +185,7 @@ export function useLekhaEngine(initialLayout: LayoutId = 'bijoy', initialText = 
   function setLayout(id: LayoutId): void {
     layoutId.value = id
     internal.lastBanglaChar = ''
+    internal.activePreKar = ''
     internal.avroAWaiting = false
     internal.avroChaToggle = false
     resetPhoneticBuffer()
@@ -307,54 +307,108 @@ export function useLekhaEngine(initialLayout: LayoutId = 'bijoy', initialText = 
     }
 
     // FIXED LAYOUTS (Bijoy, UniJoy, etc.)
-    if (input.key === 'Backspace') return backspace()
-    if (input.key === 'Delete') return del()
-    if (input.key.length !== 1) return { accepted: false, text: text.value, cursor: cursor.value }
+    if (input.key === 'Backspace') {
+      internal.activePreKar = ''
+      return backspace()
+    }
+    if (input.key === 'Delete') {
+      internal.activePreKar = ''
+      return del()
+    }
+    if (input.key.length !== 1) {
+      internal.activePreKar = ''
+      return { accepted: false, text: text.value, cursor: cursor.value }
+    }
 
     pushBuffer(input.key)
     const mapped = mapChar(layout.value, input.key)
     if (!mapped) return { accepted: false, text: text.value, cursor: cursor.value }
 
-    let insertTextValue = mapped
-    
-    // TYPOGRAPHIC NORMALIZATION & COMPLEX TRANSITIONS
-    if (layout.value.type === 'fixed') {
-      // 1. Reph Logic (র্ + Consonant)
-      // If we type 'র্' (A in Bijoy) and then a consonant, it stays 'র্' then consonant.
-      // But Unicode usually puts 'র্' AFTER the consonant cluster.
-      // Our reorderSimplePreKar handles moving 'র্' to the end of the cluster.
+    // Flush state on space
+    if (input.key === ' ') {
+       internal.activePreKar = ''
+       internal.lastBanglaChar = ''
+       const next = insertAtCursor(text.value, cursor.value, ' ')
+       setText(next.text, next.cursor)
+       return { accepted: true, text: text.value, cursor: cursor.value }
+    }
 
-      // 2. Vowel Normalization
-      if (internal.lastBanglaChar === 'অ' && mapped === 'া') {
-         const removed = deletePreviousCluster(text.value, cursor.value)
-         setText(removed.text, removed.cursor)
-         insertTextValue = 'আ'
-      } else if (internal.lastBanglaChar === 'ে' && mapped === 'া') {
-         const removed = deletePreviousCluster(text.value, cursor.value)
-         setText(removed.text, removed.cursor)
-         insertTextValue = 'ো'
-      } else if (internal.lastBanglaChar === 'ে' && mapped === 'ৗ') {
-         const removed = deletePreviousCluster(text.value, cursor.value)
-         setText(removed.text, removed.cursor)
-         insertTextValue = 'ৌ'
-      } else if (internal.lastBanglaChar === 'র' && mapped === '্য') {
-         // Special handling for র‌্য
-         insertTextValue = '\u200C্য'
+    let insertTextValue = mapped
+    let skipNormalInsert = false
+
+    if (layout.value.type === 'fixed') {
+      const charBefore = text.value.charAt(cursor.value - 1);
+
+      // Rule A: Hasant-to-Vowel (Bijoy Shoroborno)
+      if (charBefore === '্' && isBanglaKar(mapped)) {
+         const textWithoutHasant = text.value.slice(0, cursor.value - 1) + text.value.slice(cursor.value);
+         const next = insertAtCursor(textWithoutHasant, cursor.value - 1, toVowel(mapped));
+         setText(next.text, next.cursor);
+         internal.activePreKar = ''
+         skipNormalInsert = true
+      }
+      
+      // Rule B: Standalone Vowel Normalization (অ + া = আ)
+      else if (charBefore === 'অ' && mapped === 'া') {
+         const textWithoutO = text.value.slice(0, cursor.value - 1) + text.value.slice(cursor.value);
+         const next = insertAtCursor(textWithoutO, cursor.value - 1, 'আ');
+         setText(next.text, next.cursor);
+         internal.activePreKar = ''
+         skipNormalInsert = true
+      }
+
+      // Rule C: Pre-Kar Swapping State Machine
+      else if (isPreKar(mapped)) {
+         internal.activePreKar = mapped
+      }
+      
+      else if (internal.activePreKar && charBefore === internal.activePreKar && (isBanglaConsonant(mapped) || mapped === '্')) {
+         const textWithoutKar = text.value.slice(0, cursor.value - 1) + text.value.slice(cursor.value);
+         const next = insertAtCursor(textWithoutKar, cursor.value - 1, mapped + internal.activePreKar);
+         setText(next.text, next.cursor);
+         
+         if (mapped !== '্') {
+            internal.activePreKar = ''
+         }
+         skipNormalInsert = true
+      }
+
+      // Rule D: Composite Kars (ে + া = ো)
+      else if (charBefore === 'ে' && mapped === 'া') {
+         const textWithoutE = text.value.slice(0, cursor.value - 1) + text.value.slice(cursor.value);
+         const next = insertAtCursor(textWithoutE, cursor.value - 1, 'ো');
+         setText(next.text, next.cursor);
+         internal.activePreKar = ''
+         skipNormalInsert = true
+      }
+
+      // Rule E: Smooth Special Bijoy Clusters (র‍্য)
+      else if (charBefore === 'র' && mapped === '্য') {
+         // Using ZWJ (\u200D) for a smooth join in modern fonts
+         insertTextValue = '\u200D্য'
+         internal.activePreKar = ''
+      }
+
+      // Rule F: Reph Back-Swap (Bijoy Post-Typing Reordering)
+      else if (mapped === 'র্') {
+         const textBefore = text.value.slice(0, cursor.value);
+         const match = textBefore.match(/([ক-হড়ঢ়য়ৎ]([্][ক-হড়ঢ়য়ৎ])*([ািীুূৃেৈোৌৗ])?)$/);
+         if (match) {
+            const cluster = match[0];
+            const textWithoutCluster = text.value.slice(0, cursor.value - cluster.length) + text.value.slice(cursor.value);
+            const next = insertAtCursor(textWithoutCluster, cursor.value - cluster.length, 'র্' + cluster);
+            setText(next.text, next.cursor);
+            skipNormalInsert = true;
+         }
       }
     }
 
-    if (insertTextValue.length > 0) {
+    if (!skipNormalInsert && insertTextValue.length > 0) {
       const next = insertAtCursor(text.value, cursor.value, insertTextValue)
       setText(next.text, next.cursor)
-      
-      const reordered = reorderSimplePreKar(text.value)
-      if (reordered !== text.value) {
-         // Keep cursor after the transformation
-         setText(reordered, cursor.value) 
-      }
-      
-      internal.lastBanglaChar = insertTextValue
     }
+
+    internal.lastBanglaChar = text.value.charAt(cursor.value - 1);
 
     return {
       accepted: true,
