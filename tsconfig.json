@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "lib": ["ESNext", "DOM"],
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "~/*": ["./app/*", "./*"],
+      "@/*": ["./app/*", "./*"],
+      "~/types/*": ["./app/types/*"]
+    },
+    "types": ["@types/node"]
+  },
+  "include": ["**/*.ts", "**/*.d.ts", "**/*.vue", "**/*.js"],
+  "files": [".nuxt/imports.d.ts", ".nuxt/nuxt.d.ts", ".nuxt/nuxt.node.d.ts"],
+  "extends": "./.nuxt/tsconfig.json"
+}

@@ -1,0 +1,31 @@
+@import "tailwindcss";
+@import "@nuxt/ui";
+
+@theme static {
+  --font-sans: 'Anek Bangla', 'Noto Sans Bengali', 'Noto Sans', sans-serif;
+
+  --color-teal-50: #eefcf9;
+  --color-teal-100: #d2f8f1;
+  --color-teal-200: #a8f1e5;
+  --color-teal-300: #6fe5d5;
+  --color-teal-400: #2fd1bc;
+  --color-teal-500: #12b6a2;
+  --color-teal-600: #0d9182;
+  --color-teal-700: #0f7368;
+  --color-teal-800: #115c54;
+  --color-teal-900: #124c45;
+  --color-teal-950: #032e2a;
+}
+
+:root {
+  background:
+    radial-gradient(circle at 12% 8%, rgba(18, 182, 162, 0.16), transparent 46%),
+    radial-gradient(circle at 85% 20%, rgba(15, 115, 104, 0.12), transparent 44%),
+    linear-gradient(180deg, #f7fbfb, #eef4f4);
+}
+
+.lekha-editor textarea {
+  font-feature-settings: "kern" 1;
+  line-height: 1.9;
+  min-height: 24rem;
+}
