@@ -42,19 +42,30 @@ npm install
 npm run dev
 ```
 
-### Build
+### Build & Generate (Static)
 
 ```bash
-# Build for production
-npm run build
+# Generate static site for deployment
+npm run generate
 ```
+
+## 🚀 Deployment (GitHub Pages)
+
+This project is configured for automated deployment to GitHub Pages.
+
+1.  Push your code to the `main` branch.
+2.  The GitHub Action in `.github/workflows/deploy.yml` will automatically build and deploy.
+3.  Ensure your repository settings are set to serve from the `gh-pages` branch.
+
+**Note:** If your repository name is not `lekhajs`, update the `NUXT_APP_BASE_URL` in `.github/workflows/deploy.yml` and `nuxt.config.ts`.
 
 ## 📜 Credits & Acknowledgments
 
 Lekha.js is built upon the foundational work of the Bengali open-source community:
 
-- **bnwebtools:** This project is a rewrite and upgrade of the [Bangla Unicode Web Tools](http://sourceforge.net/projects/bnwebtools) (originally by **S M Mahbub Murshed** and **Arup Kamal**). Their original logic for Bijoy/Avro mappings and phonetic transformations provided the core blueprint for Lekha.js.
-- **Avro Phonetic:** Transliteration logic inspired by OmicronLab and implemented via the `nodejs-avro-phonetic` community port.
+- **bnwebtools:** Logic and mappings derived from the [Bangla Unicode Web Tools](http://sourceforge.net/projects/bnwebtools) project, created by **S M Mahbub Murshed** and **Arup Kamal**.
+- **Avro Phonetic:** Phonetic transliteration system and rules created by **Mehdi Hasan Khan** of **OmicronLab**.
+- **jsAvroPhonetic:** Modern JavaScript implementation of Avro logic, used via the `nodejs-avro-phonetic` community port.
 - **SolaimanLipi:** The default font recommendation for optimal rendering.
 
 ## ⚖️ License
