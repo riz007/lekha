@@ -2,6 +2,11 @@
   "name": "lekhajs",
   "private": true,
   "type": "module",
+  "homepage": "https://riz007.github.io/lekha/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/riz007/lekha.git"
+  },
   "scripts": {
     "build": "nuxt build",
     "generate": "nuxt generate",

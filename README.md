@@ -1,5 +1,7 @@
 # Lekha.js – Advanced Typographic Bengali Engine
 
+[![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://riz007.github.io/lekha/)
+
 Lekha.js is a modern, headless Bengali typing engine built with **Nuxt 4** and **TipTap**. It is designed to solve legacy issues with Bengali Unicode rendering, cursor management, and cluster-safe editing.
 
 Lekha.js is an evolutionary upgrade of the classic **Bangla Unicode Web Tools (bnwebtools)** project, bringing its robust logic into the modern web ecosystem.
