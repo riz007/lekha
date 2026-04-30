@@ -24,15 +24,22 @@ const emit = defineEmits<{
 const engine = useLekhaEngine(props.layoutId, props.modelValue)
 const toast = useToast()
 
-watch(() => props.layoutId, (newId) => {
-  engine.setLayout(newId)
-})
-
-watch(() => props.smartBackspace, (newVal) => {
-  if (newVal !== undefined) {
-    engine.preferences.smartBackspace = newVal
+watch(
+  () => props.layoutId,
+  (newId) => {
+    engine.setLayout(newId)
+    engine.resetState()
   }
-})
+)
+
+watch(
+  () => props.smartBackspace,
+  (newVal) => {
+    if (newVal !== undefined) {
+      engine.preferences.smartBackspace = newVal
+    }
+  }
+)
 
 const suggestions = ref<string[]>([])
 const suggestionPosition = ref({ top: 0, left: 0 })
@@ -44,8 +51,8 @@ const editor = useEditor({
     TextStyle,
     Color,
     LekhaInput.configure({
-      engine,
-    }),
+      engine
+    })
   ],
   onUpdate: ({ editor }) => {
     const text = editor.getText()
@@ -57,19 +64,30 @@ const editor = useEditor({
   },
   editorProps: {
     attributes: {
-      class: 'prose prose-sm sm:prose-base lg:prose-lg xl:prose-2xl m-5 focus:outline-none min-h-[400px]',
-      role: 'textbox',
+      'class':
+        'prose prose-sm sm:prose-base lg:prose-lg xl:prose-2xl m-5 focus:outline-none min-h-[400px]',
+      'role': 'textbox',
       'aria-multiline': 'true',
       'aria-label': 'Bengali editor',
-    },
-  },
+      // Prevent Chrome/Safari from double-correcting Bengali characters
+      'spellcheck': 'false',
+      'autocorrect': 'off',
+      'autocapitalize': 'none',
+      'autocomplete': 'off',
+      // Prevent Google Translate from mangling Unicode in the editor
+      'translate': 'no',
+      // Disable Grammarly and LanguageTool browser extensions
+      'data-gramm': 'false',
+      'data-lt-active': 'false'
+    }
+  }
 })
 
 function updateSuggestions(editorInstance: any) {
   const { view, state } = editorInstance
   const { selection } = state
   const { from } = selection
-  
+
   if (from === 0) {
     suggestions.value = []
     return
@@ -77,7 +95,7 @@ function updateSuggestions(editorInstance: any) {
 
   const $pos = state.doc.resolve(from)
   const textBefore = $pos.parent.textBetween(Math.max(0, $pos.parentOffset - 2), $pos.parentOffset)
-  
+
   if (!textBefore) {
     suggestions.value = []
     return
@@ -85,21 +103,21 @@ function updateSuggestions(editorInstance: any) {
 
   const lastChar = textBefore[textBefore.length - 1]
   const lastTwo = textBefore.slice(-2)
-  
+
   let match: string[] | undefined
-  
+
   if (lastChar === '্' && textBefore.length > 1) {
     match = CONJUNCT_SUGGESTIONS[textBefore.slice(-2) as keyof typeof CONJUNCT_SUGGESTIONS]
   } else if (lastTwo && CONJUNCT_SUGGESTIONS[lastTwo as keyof typeof CONJUNCT_SUGGESTIONS]) {
     match = CONJUNCT_SUGGESTIONS[lastTwo as keyof typeof CONJUNCT_SUGGESTIONS]
   }
-  
+
   if (!match && engine.layout.value.id === 'avro') {
-     const buffer = engine.buffer.value
-     if (buffer.length > 0) {
-        const lastTyped = buffer[buffer.length - 1] as keyof typeof COMMON_PHONETIC_SUGGESTIONS
-        match = COMMON_PHONETIC_SUGGESTIONS[lastTyped]
-     }
+    const buffer = engine.buffer.value
+    if (buffer.length > 0) {
+      const lastTyped = buffer[buffer.length - 1] as keyof typeof COMMON_PHONETIC_SUGGESTIONS
+      match = COMMON_PHONETIC_SUGGESTIONS[lastTyped]
+    }
   }
 
   if (match) {
@@ -116,17 +134,17 @@ function updateSuggestions(editorInstance: any) {
 
 function applySuggestion(suggestion: string) {
   if (!editor.value) return
-  
+
   const { state } = editor.value
   const { selection } = state
   const { from } = selection
-  
+
   const $pos = state.doc.resolve(from)
-  let replaceFrom = from - 1 
-  
+  let replaceFrom = from - 1
+
   const textBefore = $pos.parent.textBetween(Math.max(0, $pos.parentOffset - 2), $pos.parentOffset)
   if (textBefore.endsWith('্')) {
-     replaceFrom = from - 2
+    replaceFrom = from - 2
   }
 
   editor.value.chain().focus().insertContentAt({ from: replaceFrom, to: from }, suggestion).run()
@@ -137,13 +155,14 @@ function copyToClipboard(mode: 'unicode' | 'bijoy') {
   if (!editor.value) return
   const text = editor.value.getText()
   const toCopy = mode === 'unicode' ? safeCopy(text) : convertToBijoy(text)
-  
+
   navigator.clipboard.writeText(toCopy).then(() => {
     toast.add({
       title: mode === 'unicode' ? 'ইউনিকোড কপি হয়েছে' : 'বিজয় কপি হয়েছে',
-      description: mode === 'unicode' 
-        ? 'আধুনিক অ্যাপের জন্য টেক্সট কপি করা হয়েছে।' 
-        : 'পুরাতন ডিজাইনিং অ্যাপের জন্য টেক্সট কনভার্ট করে কপি করা হয়েছে।',
+      description:
+        mode === 'unicode'
+          ? 'আধুনিক অ্যাপের জন্য টেক্সট কপি করা হয়েছে।'
+          : 'পুরাতন ডিজাইনিং অ্যাপের জন্য টেক্সট কনভার্ট করে কপি করা হয়েছে।',
       color: 'success',
       icon: 'i-lucide-check-circle'
     })
@@ -151,13 +170,26 @@ function copyToClipboard(mode: 'unicode' | 'bijoy') {
 }
 
 const colors = [
-  '#000000', '#ef4444', '#f97316', '#f59e0b', '#10b981', '#06b6d4', '#3b82f6', '#6366f1', '#8b5cf6', '#d946ef', '#ec4899', '#64748b'
+  '#000000',
+  '#ef4444',
+  '#f97316',
+  '#f59e0b',
+  '#10b981',
+  '#06b6d4',
+  '#3b82f6',
+  '#6366f1',
+  '#8b5cf6',
+  '#d946ef',
+  '#ec4899',
+  '#64748b'
 ]
 
 watch(engine.isEnglish, (newVal) => {
   toast.add({
     title: newVal ? 'English Mode' : 'বাংলা মোড',
-    description: newVal ? 'Standard QWERTY layout active.' : `${engine.layout.value.name} লেআউট সক্রিয়।`,
+    description: newVal
+      ? 'Standard QWERTY layout active.'
+      : `${engine.layout.value.name} লেআউট সক্রিয়।`,
     color: newVal ? 'neutral' : 'primary',
     icon: newVal ? 'i-lucide-languages' : 'i-lucide-type',
     duration: 2000
@@ -165,11 +197,14 @@ watch(engine.isEnglish, (newVal) => {
 })
 
 // Sync external modelValue changes back to editor if needed
-watch(() => props.modelValue, (newVal) => {
-  if (editor.value && newVal !== editor.value.getText()) {
-    editor.value.commands.setContent(newVal, { emitUpdate: false })
+watch(
+  () => props.modelValue,
+  (newVal) => {
+    if (editor.value && newVal !== editor.value.getText()) {
+      editor.value.commands.setContent(newVal, { emitUpdate: false })
+    }
   }
-})
+)
 
 defineExpose({
   editor
@@ -177,11 +212,14 @@ defineExpose({
 </script>
 
 <template>
-  <div 
+  <div
     class="lekha-editor-container border border-gray-200 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-950 shadow-sm overflow-hidden relative transition-all duration-200 focus-within:ring-2 focus-within:ring-primary-500/20 focus-within:border-primary-500"
     :style="{ fontSize: `${fontSize || 18}px` }"
   >
-    <div v-if="editor" class="border-b border-gray-200 dark:border-gray-800 p-2 flex flex-wrap items-center gap-2 bg-gray-50/50 dark:bg-gray-900/50 backdrop-blur-sm">
+    <div
+      v-if="editor"
+      class="border-b border-gray-200 dark:border-gray-800 p-2 flex flex-wrap items-center gap-2 bg-gray-50/50 dark:bg-gray-900/50 backdrop-blur-sm"
+    >
       <div class="flex gap-1 border-r border-gray-200 dark:border-gray-800 pr-2">
         <UTooltip text="Bold (Ctrl+B)">
           <UButton
@@ -255,9 +293,11 @@ defineExpose({
       <div class="flex-1" />
 
       <div class="flex items-center gap-2 px-2">
-        <span class="text-[10px] uppercase tracking-wider font-bold text-gray-400 dark:text-gray-500">Mode</span>
-        <UBadge 
-          variant="subtle" 
+        <span
+          class="text-[10px] uppercase tracking-wider font-bold text-gray-400 dark:text-gray-500"
+        >Mode</span>
+        <UBadge
+          variant="subtle"
           :color="engine.isEnglish.value ? 'neutral' : 'primary'"
           class="font-mono px-2"
         >
@@ -265,8 +305,11 @@ defineExpose({
         </UBadge>
       </div>
     </div>
-    
-    <EditorContent :editor="editor" class="p-4" />
+
+    <EditorContent
+      :editor="editor"
+      class="p-4"
+    />
 
     <!-- Suggestions Tooltip -->
     <Teleport to="body">
@@ -278,7 +321,7 @@ defineExpose({
         leave-from-class="transform scale-100 opacity-100"
         leave-to-class="transform scale-95 opacity-0"
       >
-        <div 
+        <div
           v-if="suggestions.length > 0"
           class="absolute z-[100] bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-2xl p-2 flex flex-wrap gap-2 max-w-[320px] backdrop-blur-md"
           :style="{ top: `${suggestionPosition.top}px`, left: `${suggestionPosition.left}px` }"

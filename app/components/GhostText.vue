@@ -1,5 +1,8 @@
 <template>
-  <div v-if="suggestion" class="ghost-text-tooltip">
+  <div
+    v-if="suggestion"
+    class="ghost-text-tooltip"
+  >
     {{ suggestion }}
   </div>
 </template>
@@ -16,10 +19,10 @@ const frequencyDict = {
   ক্ত: 'ক্ত',
   গ্ন: 'গ্ন',
   স্ত: 'স্ত',
-  শ্চ: 'শ্চ',
+  শ্চ: 'শ্চ'
 }
 
-watch(engine.text, val => {
+watch(engine.text, (val) => {
   // Find last cluster
   const clusters = val.match(/([ক-হড়ঢ়য়ৎ][্][ক-হড়ঢ়য়ৎ])/g)
   if (clusters && clusters.length > 0) {

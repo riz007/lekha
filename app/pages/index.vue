@@ -5,7 +5,7 @@ import LekhaEditor from '../components/LekhaEditor.vue'
 
 useSeoMeta({
   title: 'Lekha.js - Advanced Bengali Typographic Engine',
-  description: 'High-performance headless Bengali typing engine for Nuxt 4 + TipTap.',
+  description: 'High-performance headless Bengali typing engine for Nuxt 4 + TipTap.'
 })
 
 const store = useLekhaStore()
@@ -14,21 +14,21 @@ const selectedLayout = computed({
   get: () => store.currentLayout,
   set: (value: LayoutId) => {
     store.currentLayout = value
-  },
+  }
 })
 
 const smartBackspace = computed({
   get: () => store.userPreferences.smartBackspace,
   set: (value: boolean) => {
     store.userPreferences.smartBackspace = value
-  },
+  }
 })
 
 const fontSize = computed({
   get: () => store.userPreferences.fontSize,
   set: (value: number) => {
     store.userPreferences.fontSize = value
-  },
+  }
 })
 
 const editorText = ref('সোনার বাংলা, আমি তোমায় ভালোবাসি।')
@@ -58,7 +58,10 @@ const keyMapRows = computed(() => {
         <div class="space-y-2">
           <div class="flex items-center gap-3">
             <div class="bg-primary-500 rounded-lg p-2 shadow-lg shadow-primary-500/20">
-              <UIcon name="i-lucide-pen-tool" class="w-6 h-6 text-white" />
+              <UIcon
+                name="i-lucide-pen-tool"
+                class="w-6 h-6 text-white"
+              />
             </div>
             <h1 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
               Lekha<span class="text-primary-500">.js</span>
@@ -87,7 +90,10 @@ const keyMapRows = computed(() => {
         class="border-none shadow-xl ring-1 ring-gray-200 dark:ring-gray-800 bg-white/50 dark:bg-gray-900/50 backdrop-blur-xl"
       >
         <div class="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
-          <UFormField label="কীবোর্ড লেআউট" description="পছন্দমতো লেআউট নির্বাচন করুন।">
+          <UFormField
+            label="কীবোর্ড লেআউট"
+            description="পছন্দমতো লেআউট নির্বাচন করুন।"
+          >
             <USelect
               v-model="selectedLayout"
               :items="LAYOUT_OPTIONS"
@@ -98,9 +104,18 @@ const keyMapRows = computed(() => {
             />
           </UFormField>
 
-          <UFormField label="ফন্ট সাইজ" :description="`${fontSize} পিক্সেল`">
+          <UFormField
+            label="ফন্ট সাইজ"
+            :description="`${fontSize} পিক্সেল`"
+          >
             <div class="pt-2">
-              <USlider v-model="fontSize" :min="16" :max="48" :step="1" color="primary" />
+              <USlider
+                v-model="fontSize"
+                :min="16"
+                :max="48"
+                :step="1"
+                color="primary"
+              />
             </div>
           </UFormField>
 
@@ -119,13 +134,21 @@ const keyMapRows = computed(() => {
                 </UTooltip>
               </div>
             </template>
-            <template #description> বুদ্ধিমান ক্যারেক্টার ডিলিট। </template>
+            <template #description>
+              বুদ্ধিমান ক্যারেক্টার ডিলিট।
+            </template>
             <div class="pt-2">
-              <UCheckbox v-model="smartBackspace" label="স্মার্ট ডিলিট মোড" />
+              <UCheckbox
+                v-model="smartBackspace"
+                label="স্মার্ট ডিলিট মোড"
+              />
             </div>
           </UFormField>
 
-          <UFormField label="দ্রুত একশন" description="আপনার কাজের জায়গা নিয়ন্ত্রণ করুন।">
+          <UFormField
+            label="দ্রুত একশন"
+            description="আপনার কাজের জায়গা নিয়ন্ত্রণ করুন।"
+          >
             <div class="flex gap-2 pt-1">
               <UButton
                 color="neutral"
@@ -136,7 +159,12 @@ const keyMapRows = computed(() => {
               >
                 কীম্যাপ
               </UButton>
-              <UButton color="error" variant="soft" icon="i-lucide-trash-2" @click="clearCanvas">
+              <UButton
+                color="error"
+                variant="soft"
+                icon="i-lucide-trash-2"
+                @click="clearCanvas"
+              >
                 মুছুন
               </UButton>
             </div>
@@ -149,14 +177,14 @@ const keyMapRows = computed(() => {
         <div class="flex items-center justify-between px-1">
           <div class="flex items-center gap-2">
             <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-            <h2 class="text-sm font-semibold uppercase tracking-wider text-gray-500">লাইভ এডিটর</h2>
+            <h2 class="text-sm font-semibold uppercase tracking-wider text-gray-500">
+              লাইভ এডিটর
+            </h2>
           </div>
           <div class="flex items-center gap-4 text-xs text-gray-400">
             <span>মোড পাল্টাতে: <UKbd value="Esc" /></span>
-            <span
-              >মুছতে: <UKbd :value="isMac ? 'Cmd' : 'Ctrl'" /> + <UKbd value="Alt" /> +
-              <UKbd value="C"
-            /></span>
+            <span>মুছতে: <UKbd :value="isMac ? 'Cmd' : 'Ctrl'" /> + <UKbd value="Alt" /> +
+              <UKbd value="C" /></span>
           </div>
         </div>
 
@@ -174,11 +202,17 @@ const keyMapRows = computed(() => {
       >
         <div class="flex items-center gap-6 text-xs font-medium text-gray-400">
           <div class="flex items-center gap-1.5">
-            <UIcon name="i-lucide-cpu" class="w-4 h-4" />
+            <UIcon
+              name="i-lucide-cpu"
+              class="w-4 h-4"
+            />
             <span>{{ LAYOUTS[selectedLayout].type.toUpperCase() }} ইঞ্জিন সক্রিয়</span>
           </div>
           <div class="flex items-center gap-1.5">
-            <UIcon name="i-lucide-shield-check" class="w-4 h-4" />
+            <UIcon
+              name="i-lucide-shield-check"
+              class="w-4 h-4"
+            />
             <span>নিরাপদ ক্লাস্টার মোড</span>
           </div>
         </div>
@@ -213,14 +247,19 @@ const keyMapRows = computed(() => {
               >
                 <span
                   class="text-[10px] font-mono text-gray-400 group-hover:text-primary-500 mb-1"
-                  >{{ key }}</span
-                >
+                >{{ key }}</span>
                 <span class="text-2xl font-semibold">{{ value }}</span>
               </div>
             </div>
           </div>
           <div class="p-4 bg-white dark:bg-gray-950 flex justify-end">
-            <UButton color="neutral" variant="ghost" @click="showMap = false">বন্ধ করুন</UButton>
+            <UButton
+              color="neutral"
+              variant="ghost"
+              @click="showMap = false"
+            >
+              বন্ধ করুন
+            </UButton>
           </div>
         </div>
       </template>

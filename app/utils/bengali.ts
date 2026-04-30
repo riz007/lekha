@@ -1,12 +1,12 @@
-const segmenter =
-  typeof Intl !== 'undefined' && 'Segmenter' in Intl
+const segmenter
+  = typeof Intl !== 'undefined' && 'Segmenter' in Intl
     ? new Intl.Segmenter('bn', { granularity: 'grapheme' })
     : null
 
-const CLUSTER_REGEX = /([ক-হড়ঢ়য়ৎ]([্][ক-হড়ঢ়য়ৎ])*)/g 
+const CLUSTER_REGEX = /([ক-হড়ঢ়য়ৎ]([্][ক-হড়ঢ়য়ৎ])*)/g
 
-export function findConjunctClusters(text: string): Array<{ start: number; end: number }> {
-  const clusters: Array<{ start: number; end: number }> = []
+export function findConjunctClusters(text: string): Array<{ start: number, end: number }> {
+  const clusters: Array<{ start: number, end: number }> = []
   let match: RegExpExecArray | null
   const regex = new RegExp(CLUSTER_REGEX)
   while ((match = regex.exec(text))) {
@@ -85,30 +85,30 @@ export function insertAtCursor(
   text: string,
   cursor: number,
   insertText: string
-): { text: string; cursor: number } {
+): { text: string, cursor: number } {
   const nextText = text.slice(0, cursor) + insertText + text.slice(cursor)
   return {
     text: nextText,
-    cursor: cursor + insertText.length,
+    cursor: cursor + insertText.length
   }
 }
 
 export function deletePreviousCluster(
   text: string,
   cursor: number
-): { text: string; cursor: number } {
+): { text: string, cursor: number } {
   const start = findBoundaryBefore(text, cursor)
   return {
     text: text.slice(0, start) + text.slice(cursor),
-    cursor: start,
+    cursor: start
   }
 }
 
-export function deleteNextCluster(text: string, cursor: number): { text: string; cursor: number } {
+export function deleteNextCluster(text: string, cursor: number): { text: string, cursor: number } {
   const end = findBoundaryAfter(text, cursor)
   return {
     text: text.slice(0, cursor) + text.slice(end),
-    cursor,
+    cursor
   }
 }
 
@@ -137,7 +137,7 @@ export function toKar(vowel: string): string {
 
 export function toVowel(kar: string): string {
   const map: Record<string, string> = {
-    'া': 'আ', 'ি': 'ই', 'ী': 'ঈ', 'ু': 'উ', 'ূ': 'ঊ', 
+    'া': 'আ', 'ি': 'ই', 'ী': 'ঈ', 'ু': 'উ', 'ূ': 'ঊ',
     'ৃ': 'ঋ', 'ে': 'এ', 'ৈ': 'ঐ', 'ো': 'ও', 'ৌ': 'ঔ', 'ৗ': 'ঔ'
   }
   return map[kar] ?? kar
@@ -146,7 +146,7 @@ export function toVowel(kar: string): string {
 export function atomicCursor(text: string, cursor: number): number {
   const boundaries = boundaryIndexes(text)
   if (boundaries.includes(cursor)) return cursor
-  
+
   let nearest = 0
   let minDist = Infinity
   for (const b of boundaries) {

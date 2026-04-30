@@ -9,12 +9,12 @@ const bijoyMap: Record<string, string> = {
   'y': 'চ', 't': 'ট', 'e': 'ড', 'r': 'প', 'o': 'গ', 'p': 'ড়', 'f': 'া', 'd': 'ি', 's': 'ু', 'a': 'ৃ',
   'c': 'ে', 'w': 'য', 'g': '্', 'q': 'ঙ', 'z': '্র', 'x': 'ও', '`': '‌',
   '\\': 'ৎ', ';': '；', ',': '，', '.': '।', '/': '/', '[': ']', ']': '}',
-  
+
   // Shift
   'J': 'খ', 'K': 'থ', 'L': 'ধ', 'H': 'ভ', 'V': 'ল', 'B': 'ণ', 'N': 'ষ', 'M': 'শ', 'U': 'ঝ', 'I': 'ঞ',
   'Y': 'ছ', 'T': 'ঠ', 'E': 'ঢ', 'R': 'ফ', 'O': 'ঘ', 'P': 'ঢ়', 'F': 'অ', 'D': 'ী', 'S': 'ূ', 'A': 'র্',
   'C': 'ৈ', 'W': 'য়', 'G': '।', 'Q': 'ং', 'Z': '্য', 'X': 'ৗ', '~': '‍',
-  '&': 'ঁ', '$': '৳', '|': 'ঃ',
+  '&': 'ঁ', '$': '৳', '|': 'ঃ'
 }
 
 // AUTHORITATIVE PROBHAT MAPPING
@@ -26,12 +26,12 @@ const probhatMap: Record<string, string> = {
   'k': 'ক', 'l': 'ল', 'm': 'ম', 'n': 'ন', 'o': 'ো', 'p': 'প', 'q': 'ৃ', 'r': 'র', 's': 'স', 't': 'ত',
   'u': 'ু', 'v': 'ভ', 'w': 'ে', 'x': 'ষ', 'y': 'য়', 'z': 'য',
   ';': '；', ',': '，', '.': '।', '[': 'ৎ', ']': '।', '\\': '॥', '`': '‍',
-  
+
   // Shift
   'A': 'আ', 'B': 'ভ', 'C': 'ছ', 'D': 'ড', 'E': 'ৈ', 'F': '্', 'G': 'ঘ', 'H': 'ঃ', 'I': 'ই', 'J': 'ঝ',
   'K': 'খ', 'L': 'ব', 'M': 'ঙ', 'N': 'ঞ', 'O': 'ও', 'P': 'ঢ়', 'Q': 'ৌ', 'R': 'ড়', 'S': 'ষ', 'T': 'ট',
   'U': 'উ', 'V': 'র', 'W': 'ৈ', 'X': 'ক্ষ', 'Y': '্য', 'Z': '্য',
-  ':': 'ঃ', '<': 'ৃ', '>': 'ঁ', '{': 'ঁ', '}': 'ৈ', '|': 'ঃ', '~': '‌', '?' : '？'
+  ':': 'ঃ', '<': 'ৃ', '>': 'ঁ', '{': 'ঁ', '}': 'ৈ', '|': 'ঃ', '~': '‌', '?': '？'
 }
 
 // AUTHORITATIVE UNIJOY MAPPING
@@ -40,7 +40,7 @@ const unijoyMap: Record<string, string> = {
   'x': 'ো',
   'X': 'ৌ',
   '^': '÷',
-  '*': '×',
+  '*': '×'
 }
 
 const somewhereInMap: Record<string, string> = {
@@ -51,7 +51,7 @@ const somewhereInMap: Record<string, string> = {
   'm': 'ম', 'M': 'গ', 'q': 'য়', 'Q': 'ছ', 'w': 'ৃ', 'W': 'ঋ', 'e': 'ে', 'E': 'এ', 'r': 'র', 'R': 'ড়',
   't': 'ট', 'T': 'ত', 'y': 'য়', 'Y': '্য', 'u': 'ু', 'U': 'উ', 'i': 'ি', 'I': 'ই', 'o': 'ো', 'O': 'ও',
   'p': 'প', 'P': 'চ', '&': '্', '$': '৳', '+': '্', '.': '।', '`': '\u200C', '~': '\u200D',
-  '\\': '॥', '|': '।',
+  '\\': '॥', '|': '।'
 }
 
 const avroMap: Record<string, string> = {
@@ -69,47 +69,47 @@ export const LAYOUTS: Record<LayoutId, LayoutDefinition> = {
     name: 'Bijoy',
     type: 'fixed',
     mappings: bijoyMap,
-    supportsDirectKeyInput: true,
+    supportsDirectKeyInput: true
   },
   unijoy: {
     id: 'unijoy',
     name: 'UniJoy',
     type: 'fixed',
     mappings: unijoyMap,
-    supportsDirectKeyInput: true,
+    supportsDirectKeyInput: true
   },
   somewherein: {
     id: 'somewherein',
     name: 'SomewhereIn',
     type: 'fixed',
     mappings: somewhereInMap,
-    supportsDirectKeyInput: true,
+    supportsDirectKeyInput: true
   },
   avro: {
     id: 'avro',
     name: 'Avro Phonetic',
     type: 'phonetic',
     mappings: avroMap,
-    supportsDirectKeyInput: true,
+    supportsDirectKeyInput: true
   },
   boishakhi: {
     id: 'boishakhi',
     name: 'Baishakhi',
     type: 'fixed',
     mappings: bijoyMap,
-    supportsDirectKeyInput: true,
+    supportsDirectKeyInput: true
   },
   probhat: {
     id: 'probhat',
     name: 'Probhat',
     type: 'fixed',
     mappings: probhatMap,
-    supportsDirectKeyInput: true,
-  },
+    supportsDirectKeyInput: true
+  }
 }
 
 export const LAYOUT_OPTIONS = Object.values(LAYOUTS).map(layout => ({
   label: layout.name,
   value: layout.id,
-  disabled: !layout.supportsDirectKeyInput,
+  disabled: !layout.supportsDirectKeyInput
 }))

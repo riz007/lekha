@@ -5,10 +5,8 @@ import {
   insertAtCursor,
   isBanglaConsonant,
   isBanglaKar,
-  isBanglaVowel,
   isPreKar,
-  toKar,
-  toVowel,
+  toVowel
 } from '../utils/bengali'
 import { getAvroParserSync, resolveAvroParser } from '../utils/avro-parser'
 import type {
@@ -16,7 +14,7 @@ import type {
   LayoutDefinition,
   LayoutId,
   ProcessKeyInput,
-  ProcessKeyResult,
+  ProcessKeyResult
 } from '../types/lekha'
 
 export type UseLekhaEngine = ReturnType<typeof useLekhaEngine>
@@ -32,103 +30,9 @@ interface InternalState {
 
 function shouldToggleLanguage(input: ProcessKeyInput): boolean {
   return Boolean(
-    input.key === 'Escape' ||
-    ((input.ctrlKey || input.metaKey) && (input.key === 'm' || input.key === 'M'))
+    input.key === 'Escape'
+    || ((input.ctrlKey || input.metaKey) && (input.key === 'm' || input.key === 'M'))
   )
-}
-
-function applyAvroModification(
-  prev: string,
-  next: string,
-  state: InternalState
-): { text: string; replacePrevious: boolean } {
-  if (next !== 'হ') {
-    state.avroChaToggle = false
-  }
-
-  if (prev === '্' && next === '্') {
-    return { text: '্', replacePrevious: false }
-  }
-
-  const pairKey = `${prev}|${next}`
-  const pairMap: Record<string, string> = {
-    'ক|হ': 'খ',
-    'গ|হ': 'ঘ',
-    'জ|হ': 'ঝ',
-    'ট|হ': 'ঠ',
-    'ড|হ': 'ঢ',
-    'ত|হ': 'থ',
-    'দ|হ': 'ধ',
-    'প|হ': 'ফ',
-    'ব|হ': 'ভ',
-    'স|হ': 'শ',
-    'শ|হ': 'ষ',
-    'ড়|হ': 'ঢ়',
-    'া|ো': 'অ',
-    'ি|ি': 'ী',
-    'ু|ু': 'ূ',
-    'ো|ি': 'ৈ',
-    'ো|ু': 'ৌ',
-  }
-
-  if (prev === 'চ' && next === 'হ') {
-    state.avroChaToggle = !state.avroChaToggle
-    return {
-      text: state.avroChaToggle ? 'চ' : 'ছ',
-      replacePrevious: true,
-    }
-  }
-
-  if (pairMap[pairKey]) {
-    return {
-      text: pairMap[pairKey],
-      replacePrevious: true,
-    }
-  }
-
-  if (isBanglaConsonant(prev) && next === 'য') {
-      return { text: '্য', replacePrevious: false }
-  }
-
-  if (isBanglaConsonant(prev) && next === 'অ' && !state.avroAWaiting) {
-    state.avroAWaiting = true
-    return {
-      text: '',
-      replacePrevious: false,
-    }
-  }
-
-  if (isBanglaConsonant(prev) && isBanglaVowel(next) && state.avroAWaiting) {
-    state.avroAWaiting = false
-    return {
-      text: next,
-      replacePrevious: false,
-    }
-  }
-
-  if (isBanglaConsonant(prev) && isBanglaVowel(next)) {
-    state.avroAWaiting = false
-    return {
-      text: toKar(next),
-      replacePrevious: false,
-    }
-  }
-
-  if (isBanglaConsonant(prev) && isBanglaConsonant(next) && !state.avroAWaiting) {
-    return {
-      text: `্${next}`,
-      replacePrevious: false,
-    }
-  }
-
-  if (next !== 'অ' && next !== '্') {
-    state.avroAWaiting = false
-  }
-
-  return {
-    text: next,
-    replacePrevious: false,
-  }
 }
 
 function mapChar(layout: LayoutDefinition, char: string): string {
@@ -164,7 +68,7 @@ export function useLekhaEngine(initialLayout: LayoutId = 'bijoy', initialText = 
   const isEnglish = ref(false)
   const layoutId = ref<LayoutId>(initialLayout)
   const preferences = reactive<EnginePreferences>({
-    smartBackspace: true,
+    smartBackspace: true
   })
 
   const internal = reactive<InternalState>({
@@ -173,7 +77,7 @@ export function useLekhaEngine(initialLayout: LayoutId = 'bijoy', initialText = 
     avroAWaiting: false,
     avroChaToggle: false,
     avroRomanText: '',
-    avroRomanCursor: 0,
+    avroRomanCursor: 0
   })
 
   const layout = computed<LayoutDefinition>(() => LAYOUTS[layoutId.value])
@@ -196,6 +100,14 @@ export function useLekhaEngine(initialLayout: LayoutId = 'bijoy', initialText = 
     internal.avroRomanCursor = 0
   }
 
+  function resetState(): void {
+    internal.lastBanglaChar = ''
+    internal.activePreKar = ''
+    internal.avroAWaiting = false
+    internal.avroChaToggle = false
+    resetPhoneticBuffer()
+  }
+
   function setText(value: string, nextCursor = value.length): void {
     text.value = value
     cursor.value = nextCursor
@@ -214,14 +126,14 @@ export function useLekhaEngine(initialLayout: LayoutId = 'bijoy', initialText = 
       ? deletePreviousCluster(text.value, cursor.value)
       : {
           text: text.value.slice(0, Math.max(0, cursor.value - 1)) + text.value.slice(cursor.value),
-          cursor: Math.max(0, cursor.value - 1),
+          cursor: Math.max(0, cursor.value - 1)
         }
 
     setText(next.text, next.cursor)
     return {
       accepted: true,
       text: text.value,
-      cursor: cursor.value,
+      cursor: cursor.value
     }
   }
 
@@ -231,7 +143,7 @@ export function useLekhaEngine(initialLayout: LayoutId = 'bijoy', initialText = 
     return {
       accepted: true,
       text: text.value,
-      cursor: cursor.value,
+      cursor: cursor.value
     }
   }
 
@@ -242,7 +154,7 @@ export function useLekhaEngine(initialLayout: LayoutId = 'bijoy', initialText = 
         accepted: true,
         text: text.value,
         cursor: cursor.value,
-        toggledLanguage: true,
+        toggledLanguage: true
       }
     }
 
@@ -250,7 +162,7 @@ export function useLekhaEngine(initialLayout: LayoutId = 'bijoy', initialText = 
       return {
         accepted: false,
         text: text.value,
-        cursor: cursor.value,
+        cursor: cursor.value
       }
     }
 
@@ -267,46 +179,57 @@ export function useLekhaEngine(initialLayout: LayoutId = 'bijoy', initialText = 
     // AVRO LAYOUT (Phonetic)
     if (layout.value.id === 'avro') {
       const parser = getAvroParserSync()
-      if (parser) {
-        internal.avroRomanCursor = mapUnicodeCursorToRomanCursor(
-          parser,
-          internal.avroRomanText,
-          cursor.value
-        )
 
-        if (input.key === 'Backspace') {
-          if (internal.avroRomanCursor > 0) {
-            internal.avroRomanText =
-              internal.avroRomanText.slice(0, internal.avroRomanCursor - 1) +
-              internal.avroRomanText.slice(internal.avroRomanCursor)
-            internal.avroRomanCursor -= 1
-          } else {
-             return backspace()
-          }
-        } else if (input.key === 'Delete') {
-          internal.avroRomanText =
-            internal.avroRomanText.slice(0, internal.avroRomanCursor) +
-            internal.avroRomanText.slice(internal.avroRomanCursor + 1)
-        } else if (input.key.length === 1) {
-          pushBuffer(input.key)
-          internal.avroRomanText =
-            internal.avroRomanText.slice(0, internal.avroRomanCursor) +
-            input.key +
-            internal.avroRomanText.slice(internal.avroRomanCursor)
-          internal.avroRomanCursor += 1
-        } else {
-          return { accepted: false, text: text.value, cursor: cursor.value }
+      if (!parser) {
+        // Parser still loading — accept editing keys so Backspace/Delete work,
+        // and silently consume printable keys rather than inserting raw ASCII
+        // through the fixed-layout fallthrough path.
+        if (input.key === 'Backspace') return backspace()
+        if (input.key === 'Delete') return del()
+        if (input.key.length === 1) {
+          return { accepted: true, text: text.value, cursor: cursor.value }
         }
-
-        const parsedText = parser(internal.avroRomanText)
-        const parsedPrefix = parser(internal.avroRomanText.slice(0, internal.avroRomanCursor))
-        setText(parsedText, parsedPrefix.length)
-
-        return { accepted: true, text: text.value, cursor: cursor.value }
+        return { accepted: false, text: text.value, cursor: cursor.value }
       }
+
+      internal.avroRomanCursor = mapUnicodeCursorToRomanCursor(
+        parser,
+        internal.avroRomanText,
+        cursor.value
+      )
+
+      if (input.key === 'Backspace') {
+        if (internal.avroRomanCursor > 0) {
+          internal.avroRomanText
+            = internal.avroRomanText.slice(0, internal.avroRomanCursor - 1)
+              + internal.avroRomanText.slice(internal.avroRomanCursor)
+          internal.avroRomanCursor -= 1
+        } else {
+          return backspace()
+        }
+      } else if (input.key === 'Delete') {
+        internal.avroRomanText
+          = internal.avroRomanText.slice(0, internal.avroRomanCursor)
+            + internal.avroRomanText.slice(internal.avroRomanCursor + 1)
+      } else if (input.key.length === 1) {
+        pushBuffer(input.key)
+        internal.avroRomanText
+          = internal.avroRomanText.slice(0, internal.avroRomanCursor)
+            + input.key
+            + internal.avroRomanText.slice(internal.avroRomanCursor)
+        internal.avroRomanCursor += 1
+      } else {
+        return { accepted: false, text: text.value, cursor: cursor.value }
+      }
+
+      const parsedText = parser(internal.avroRomanText)
+      const parsedPrefix = parser(internal.avroRomanText.slice(0, internal.avroRomanCursor))
+      setText(parsedText, parsedPrefix.length)
+
+      return { accepted: true, text: text.value, cursor: cursor.value }
     }
 
-    // FIXED LAYOUTS (Bijoy, UniJoy, etc.)
+    // FIXED LAYOUTS (Bijoy, UniJoy, Probhat, etc.)
     if (input.key === 'Backspace') {
       internal.activePreKar = ''
       return backspace()
@@ -326,80 +249,75 @@ export function useLekhaEngine(initialLayout: LayoutId = 'bijoy', initialText = 
 
     // Flush state on space
     if (input.key === ' ') {
-       internal.activePreKar = ''
-       internal.lastBanglaChar = ''
-       const next = insertAtCursor(text.value, cursor.value, ' ')
-       setText(next.text, next.cursor)
-       return { accepted: true, text: text.value, cursor: cursor.value }
+      internal.activePreKar = ''
+      internal.lastBanglaChar = ''
+      const next = insertAtCursor(text.value, cursor.value, ' ')
+      setText(next.text, next.cursor)
+      return { accepted: true, text: text.value, cursor: cursor.value }
     }
 
     let insertTextValue = mapped
     let skipNormalInsert = false
 
     if (layout.value.type === 'fixed') {
-      const charBefore = text.value.charAt(cursor.value - 1);
+      const charBefore = text.value.charAt(cursor.value - 1)
 
-      // Rule A: Hasant-to-Vowel (Bijoy Shoroborno)
       if (charBefore === '্' && isBanglaKar(mapped)) {
-         const textWithoutHasant = text.value.slice(0, cursor.value - 1) + text.value.slice(cursor.value);
-         const next = insertAtCursor(textWithoutHasant, cursor.value - 1, toVowel(mapped));
-         setText(next.text, next.cursor);
-         internal.activePreKar = ''
-         skipNormalInsert = true
-      }
-      
-      // Rule B: Standalone Vowel Normalization (অ + া = আ)
-      else if (charBefore === 'অ' && mapped === 'া') {
-         const textWithoutO = text.value.slice(0, cursor.value - 1) + text.value.slice(cursor.value);
-         const next = insertAtCursor(textWithoutO, cursor.value - 1, 'আ');
-         setText(next.text, next.cursor);
-         internal.activePreKar = ''
-         skipNormalInsert = true
-      }
-
-      // Rule C: Pre-Kar Swapping State Machine
-      else if (isPreKar(mapped)) {
-         internal.activePreKar = mapped
-      }
-      
-      else if (internal.activePreKar && charBefore === internal.activePreKar && (isBanglaConsonant(mapped) || mapped === '্')) {
-         const textWithoutKar = text.value.slice(0, cursor.value - 1) + text.value.slice(cursor.value);
-         const next = insertAtCursor(textWithoutKar, cursor.value - 1, mapped + internal.activePreKar);
-         setText(next.text, next.cursor);
-         
-         if (mapped !== '্') {
-            internal.activePreKar = ''
-         }
-         skipNormalInsert = true
-      }
-
-      // Rule D: Composite Kars (ে + া = ো)
-      else if (charBefore === 'ে' && mapped === 'া') {
-         const textWithoutE = text.value.slice(0, cursor.value - 1) + text.value.slice(cursor.value);
-         const next = insertAtCursor(textWithoutE, cursor.value - 1, 'ো');
-         setText(next.text, next.cursor);
-         internal.activePreKar = ''
-         skipNormalInsert = true
-      }
-
-      // Rule E: Smooth Special Bijoy Clusters (র‍্য)
-      else if (charBefore === 'র' && mapped === '্য') {
-         // Using ZWJ (\u200D) for a smooth join in modern fonts
-         insertTextValue = '\u200D্য'
-         internal.activePreKar = ''
-      }
-
-      // Rule F: Reph Back-Swap (Bijoy Post-Typing Reordering)
-      else if (mapped === 'র্') {
-         const textBefore = text.value.slice(0, cursor.value);
-         const match = textBefore.match(/([ক-হড়ঢ়য়ৎ]([্][ক-হড়ঢ়য়ৎ])*([ািীুূৃেৈোৌৗ])?)$/);
-         if (match) {
-            const cluster = match[0];
-            const textWithoutCluster = text.value.slice(0, cursor.value - cluster.length) + text.value.slice(cursor.value);
-            const next = insertAtCursor(textWithoutCluster, cursor.value - cluster.length, 'র্' + cluster);
-            setText(next.text, next.cursor);
-            skipNormalInsert = true;
-         }
+        // Rule A: Hasant-to-Vowel (Bijoy Shoroborno: ্ + kar → full vowel)
+        const textWithoutHasant = text.value.slice(0, cursor.value - 1) + text.value.slice(cursor.value)
+        const next = insertAtCursor(textWithoutHasant, cursor.value - 1, toVowel(mapped))
+        setText(next.text, next.cursor)
+        internal.activePreKar = ''
+        skipNormalInsert = true
+      } else if (charBefore === 'অ' && mapped === 'া') {
+        // Rule B: Standalone Vowel Normalization (অ + া = আ)
+        const textWithoutO = text.value.slice(0, cursor.value - 1) + text.value.slice(cursor.value)
+        const next = insertAtCursor(textWithoutO, cursor.value - 1, 'আ')
+        setText(next.text, next.cursor)
+        internal.activePreKar = ''
+        skipNormalInsert = true
+      } else if (isPreKar(mapped)) {
+        // Rule C (set): Pre-Kar Swapping — hold the pre-positioned kar until next consonant
+        internal.activePreKar = mapped
+      } else if (internal.activePreKar && charBefore === internal.activePreKar && (isBanglaConsonant(mapped) || mapped === '্')) {
+        // Rule C (apply): Swap consonant before the waiting pre-kar
+        const textWithoutKar = text.value.slice(0, cursor.value - 1) + text.value.slice(cursor.value)
+        const next = insertAtCursor(textWithoutKar, cursor.value - 1, mapped + internal.activePreKar)
+        setText(next.text, next.cursor)
+        if (mapped !== '্') {
+          internal.activePreKar = ''
+        }
+        skipNormalInsert = true
+      } else if (charBefore === 'ো' && mapped === 'া') {
+        // Rule D: Composite Kars (ো + া would be wrong; ে + া = ো)
+        // Note: charBefore here is ো which means e-kar was already merged; handle ে+া
+        const textWithoutE = text.value.slice(0, cursor.value - 1) + text.value.slice(cursor.value)
+        const next = insertAtCursor(textWithoutE, cursor.value - 1, 'ো')
+        setText(next.text, next.cursor)
+        internal.activePreKar = ''
+        skipNormalInsert = true
+      } else if (charBefore === 'ে' && mapped === 'া') {
+        // Rule D: e-kar (ে) + aa-kar (া) = o-kar (ো)
+        const textWithoutE = text.value.slice(0, cursor.value - 1) + text.value.slice(cursor.value)
+        const next = insertAtCursor(textWithoutE, cursor.value - 1, 'ো')
+        setText(next.text, next.cursor)
+        internal.activePreKar = ''
+        skipNormalInsert = true
+      } else if (charBefore === 'র' && mapped === '্য') {
+        // Rule E: র + ্য → র‍্য (ZWJ for smooth curvature in modern fonts)
+        insertTextValue = '‍্য'
+        internal.activePreKar = ''
+      } else if (mapped === 'র্') {
+        // Rule F: Reph Back-Swap — র্ moves before the preceding consonant cluster
+        const textBefore = text.value.slice(0, cursor.value)
+        const match = textBefore.match(/([ক-হড়ঢ়য়ৎ]([্][ক-হড়ঢ়য়ৎ])*([ািীুূৃোৌৗ])?)$/)
+        if (match) {
+          const cluster = match[0]
+          const textWithoutCluster = text.value.slice(0, cursor.value - cluster.length) + text.value.slice(cursor.value)
+          const next = insertAtCursor(textWithoutCluster, cursor.value - cluster.length, 'র্' + cluster)
+          setText(next.text, next.cursor)
+          skipNormalInsert = true
+        }
       }
     }
 
@@ -408,12 +326,12 @@ export function useLekhaEngine(initialLayout: LayoutId = 'bijoy', initialText = 
       setText(next.text, next.cursor)
     }
 
-    internal.lastBanglaChar = text.value.charAt(cursor.value - 1);
+    internal.lastBanglaChar = text.value.charAt(cursor.value - 1)
 
     return {
       accepted: true,
       text: text.value,
-      cursor: cursor.value,
+      cursor: cursor.value
     }
   }
 
@@ -433,8 +351,9 @@ export function useLekhaEngine(initialLayout: LayoutId = 'bijoy', initialText = 
     setCursor,
     setLayout,
     resetPhoneticBuffer,
+    resetState,
     toggleLanguage,
     processKey,
-    backspace,
+    backspace
   }
 }

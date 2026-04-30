@@ -27,7 +27,7 @@ export interface ProcessKeyResult {
   text: string
   cursor: number
   toggledLanguage?: boolean
-  
+
   // Surgical update info (optional for now)
   insertText?: string
   replaceCount?: number
