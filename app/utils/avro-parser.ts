@@ -18,8 +18,8 @@ export async function resolveAvroParser(): Promise<AvroParseFn | null> {
     const mod = await import('nodejs-avro-phonetic')
     const avro = mod.default ?? mod
 
-    const rawFn: ((text: string) => string) | null
-      = avro && typeof avro.parse === 'function'
+    const rawFn: ((text: string) => string) | null =
+      avro && typeof avro.parse === 'function'
         ? (text: string) => avro.parse(text) as string
         : typeof avro === 'function'
           ? (text: string) => (avro as (t: string) => string)(text)

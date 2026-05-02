@@ -26,7 +26,7 @@ const toast = useToast()
 
 watch(
   () => props.layoutId,
-  (newId) => {
+  newId => {
     engine.setLayout(newId)
     engine.resetState()
   }
@@ -34,7 +34,7 @@ watch(
 
 watch(
   () => props.smartBackspace,
-  (newVal) => {
+  newVal => {
     if (newVal !== undefined) {
       engine.preferences.smartBackspace = newVal
     }
@@ -64,18 +64,18 @@ const editor = useEditor({
   },
   editorProps: {
     attributes: {
-      'class':
+      class:
         'prose prose-sm sm:prose-base lg:prose-lg xl:prose-2xl m-5 focus:outline-none min-h-[400px]',
-      'role': 'textbox',
+      role: 'textbox',
       'aria-multiline': 'true',
       'aria-label': 'Bengali editor',
       // Prevent Chrome/Safari from double-correcting Bengali characters
-      'spellcheck': 'false',
-      'autocorrect': 'off',
-      'autocapitalize': 'none',
-      'autocomplete': 'off',
+      spellcheck: 'false',
+      autocorrect: 'off',
+      autocapitalize: 'none',
+      autocomplete: 'off',
       // Prevent Google Translate from mangling Unicode in the editor
-      'translate': 'no',
+      translate: 'no',
       // Disable Grammarly and LanguageTool browser extensions
       'data-gramm': 'false',
       'data-lt-active': 'false'
@@ -184,7 +184,7 @@ const colors = [
   '#64748b'
 ]
 
-watch(engine.isEnglish, (newVal) => {
+watch(engine.isEnglish, newVal => {
   toast.add({
     title: newVal ? 'English Mode' : 'বাংলা মোড',
     description: newVal
@@ -199,7 +199,7 @@ watch(engine.isEnglish, (newVal) => {
 // Sync external modelValue changes back to editor if needed
 watch(
   () => props.modelValue,
-  (newVal) => {
+  newVal => {
     if (editor.value && newVal !== editor.value.getText()) {
       editor.value.commands.setContent(newVal, { emitUpdate: false })
     }
@@ -295,7 +295,8 @@ defineExpose({
       <div class="flex items-center gap-2 px-2">
         <span
           class="text-[10px] uppercase tracking-wider font-bold text-gray-400 dark:text-gray-500"
-        >Mode</span>
+          >Mode</span
+        >
         <UBadge
           variant="subtle"
           :color="engine.isEnglish.value ? 'neutral' : 'primary'"
@@ -306,10 +307,7 @@ defineExpose({
       </div>
     </div>
 
-    <EditorContent
-      :editor="editor"
-      class="p-4"
-    />
+    <EditorContent :editor="editor" class="p-4" />
 
     <!-- Suggestions Tooltip -->
     <Teleport to="body">

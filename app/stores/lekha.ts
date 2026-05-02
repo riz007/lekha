@@ -5,7 +5,7 @@ export const useLekhaStore = defineStore('lekha', () => {
   const isEnglish = ref(false)
   const userPreferences = reactive({
     smartBackspace: true,
-    fontSize: 22
+    fontSize: 22,
   })
 
   function toggleLanguage(): void {
@@ -16,6 +16,6 @@ export const useLekhaStore = defineStore('lekha', () => {
     currentLayout,
     isEnglish,
     userPreferences,
-    toggleLanguage
+    toggleLanguage,
   }
 })

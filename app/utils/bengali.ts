@@ -1,12 +1,12 @@
-const segmenter
-  = typeof Intl !== 'undefined' && 'Segmenter' in Intl
+const segmenter =
+  typeof Intl !== 'undefined' && 'Segmenter' in Intl
     ? new Intl.Segmenter('bn', { granularity: 'grapheme' })
     : null
 
 const CLUSTER_REGEX = /([ক-হড়ঢ়য়ৎ]([্][ক-হড়ঢ়য়ৎ])*)/g
 
-export function findConjunctClusters(text: string): Array<{ start: number, end: number }> {
-  const clusters: Array<{ start: number, end: number }> = []
+export function findConjunctClusters(text: string): Array<{ start: number; end: number }> {
+  const clusters: Array<{ start: number; end: number }> = []
   let match: RegExpExecArray | null
   const regex = new RegExp(CLUSTER_REGEX)
   while ((match = regex.exec(text))) {
@@ -16,13 +16,42 @@ export function findConjunctClusters(text: string): Array<{ start: number, end: 
 }
 
 const CONSONANTS = new Set([
-  'ক', 'খ', 'গ', 'ঘ', 'ঙ',
-  'চ', 'ছ', 'জ', 'ঝ', 'ঞ',
-  'ট', 'ঠ', 'ড', 'ঢ', 'ণ',
-  'ত', 'থ', 'দ', 'ধ', 'ন',
-  'প', 'ফ', 'ব', 'ভ', 'ম',
-  'য', 'র', 'ল', 'শ', 'ষ', 'স', 'হ',
-  'ড়', 'ঢ়', 'য়', 'ৎ'
+  'ক',
+  'খ',
+  'গ',
+  'ঘ',
+  'ঙ',
+  'চ',
+  'ছ',
+  'জ',
+  'ঝ',
+  'ঞ',
+  'ট',
+  'ঠ',
+  'ড',
+  'ঢ',
+  'ণ',
+  'ত',
+  'থ',
+  'দ',
+  'ধ',
+  'ন',
+  'প',
+  'ফ',
+  'ব',
+  'ভ',
+  'ম',
+  'য',
+  'র',
+  'ল',
+  'শ',
+  'ষ',
+  'স',
+  'হ',
+  'ড়',
+  'ঢ়',
+  'য়',
+  'ৎ',
 ])
 
 const VOWELS = new Set(['অ', 'আ', 'ই', 'ঈ', 'উ', 'ঊ', 'ঋ', 'এ', 'ঐ', 'ও', 'ঔ'])
@@ -85,30 +114,30 @@ export function insertAtCursor(
   text: string,
   cursor: number,
   insertText: string
-): { text: string, cursor: number } {
+): { text: string; cursor: number } {
   const nextText = text.slice(0, cursor) + insertText + text.slice(cursor)
   return {
     text: nextText,
-    cursor: cursor + insertText.length
+    cursor: cursor + insertText.length,
   }
 }
 
 export function deletePreviousCluster(
   text: string,
   cursor: number
-): { text: string, cursor: number } {
+): { text: string; cursor: number } {
   const start = findBoundaryBefore(text, cursor)
   return {
     text: text.slice(0, start) + text.slice(cursor),
-    cursor: start
+    cursor: start,
   }
 }
 
-export function deleteNextCluster(text: string, cursor: number): { text: string, cursor: number } {
+export function deleteNextCluster(text: string, cursor: number): { text: string; cursor: number } {
   const end = findBoundaryAfter(text, cursor)
   return {
     text: text.slice(0, cursor) + text.slice(end),
-    cursor
+    cursor,
   }
 }
 
@@ -130,15 +159,33 @@ export function isPreKar(char: string): boolean {
 
 export function toKar(vowel: string): string {
   const map: Record<string, string> = {
-    আ: 'া', ই: 'ি', ঈ: 'ী', উ: 'ু', ঊ: 'ূ', ঋ: 'ৃ', এ: 'ে', ঐ: 'ৈ', ও: 'ো', ঔ: 'ৌ'
+    আ: 'া',
+    ই: 'ি',
+    ঈ: 'ী',
+    উ: 'ু',
+    ঊ: 'ূ',
+    ঋ: 'ৃ',
+    এ: 'ে',
+    ঐ: 'ৈ',
+    ও: 'ো',
+    ঔ: 'ৌ',
   }
   return map[vowel] ?? vowel
 }
 
 export function toVowel(kar: string): string {
   const map: Record<string, string> = {
-    'া': 'আ', 'ি': 'ই', 'ী': 'ঈ', 'ু': 'উ', 'ূ': 'ঊ',
-    'ৃ': 'ঋ', 'ে': 'এ', 'ৈ': 'ঐ', 'ো': 'ও', 'ৌ': 'ঔ', 'ৗ': 'ঔ'
+    'া': 'আ',
+    'ি': 'ই',
+    'ী': 'ঈ',
+    'ু': 'উ',
+    'ূ': 'ঊ',
+    'ৃ': 'ঋ',
+    'ে': 'এ',
+    'ৈ': 'ঐ',
+    'ো': 'ও',
+    'ৌ': 'ঔ',
+    'ৗ': 'ঔ',
   }
   return map[kar] ?? kar
 }
