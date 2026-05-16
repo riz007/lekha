@@ -19,12 +19,14 @@ export const LekhaInput = Extension.create<LekhaOptions>({
   addProseMirrorPlugins() {
     const { engine } = this.options
 
-    // Chrome fires beforeinput even after keydown calls preventDefault (Input Events Level 2 spec).
-    // On Android / virtual keyboards, keydown fires key:'Unidentified' so handleKeyDown cannot
-    // process the character — beforeinput carries the actual char in event.data.
-    // This flag lets beforeinput know whether handleKeyDown already consumed the keypress so we
-    // don't double-insert on desktop while still handling the Android/virtual-keyboard path.
+    // Prevents double-insert on desktop Chrome: keydown sets this so beforeinput
+    // knows not to re-process the same character.
     let handledByKeydown = false
+
+    // Prevents double-insert when beforeinput already ran the character through
+    // the engine. handleTextInput acts as a fallback (Android Chrome, non-standard
+    // inputTypes) rather than a blanket block when this is false.
+    let processedByPlugin = false
 
     function processKeyInView(view: EditorView, key: string): boolean {
       if (!engine) return false
@@ -73,21 +75,24 @@ export const LekhaInput = Extension.create<LekhaOptions>({
       new Plugin({
         key: new PluginKey('lekha-input'),
         props: {
-          // Block ProseMirror's own text-insertion path in Bengali mode.
-          // Without this, ProseMirror can insert raw characters via composition/input events
-          // even after handleKeyDown has already handled the key.
-          handleTextInput: (_view, _from, _to, _text) => {
+          handleTextInput: (view, _from, _to, text) => {
             if (!engine) return false
-            return !engine.isEnglish.value
+            if (engine.isEnglish.value) return false
+
+            if (processedByPlugin) {
+              processedByPlugin = false
+              return true
+            }
+
+            // Fallback for Android Chrome (beforeinput.preventDefault() ignored) and
+            // keyboards using non-standard inputTypes (insertFromMobile, etc.).
+            for (const char of text) {
+              processKeyInView(view, char)
+            }
+            return true
           },
 
           handleDOMEvents: {
-            // Chrome fires beforeinput AFTER keydown even when keydown calls preventDefault().
-            // This is per spec (Input Events Level 2): preventDefault on keydown does NOT
-            // cancel beforeinput. We must block text-mutation inputTypes here to prevent
-            // Chrome from double-inserting characters into the contenteditable.
-            // On Android / virtual keyboards, keydown fires 'Unidentified' so we also process
-            // the character here when handleKeyDown didn't already handle it.
             beforeinput: (view, event) => {
               if (!engine?.isEnglish.value) {
                 if ('inputType' in event) {
@@ -96,10 +101,15 @@ export const LekhaInput = Extension.create<LekhaOptions>({
 
                   if (inputType === 'insertText' || inputType === 'insertCompositionText') {
                     event.preventDefault()
-                    if (!handledByKeydown && ie.data) {
-                      for (const char of ie.data) {
-                        processKeyInView(view, char)
+                    if (!handledByKeydown) {
+                      if (ie.data) {
+                        processedByPlugin = true
+                        for (const char of ie.data) {
+                          processKeyInView(view, char)
+                        }
                       }
+                    } else {
+                      processedByPlugin = true
                     }
                     handledByKeydown = false
                     return true
@@ -137,9 +147,6 @@ export const LekhaInput = Extension.create<LekhaOptions>({
             if (!engine) return false
             handledByKeydown = false
 
-            // 1. GLOBAL SHORTCUTS
-
-            // Clear All: Ctrl+Alt+C
             if (
               (event.ctrlKey || event.metaKey) &&
               event.altKey &&
@@ -152,7 +159,6 @@ export const LekhaInput = Extension.create<LekhaOptions>({
               return true
             }
 
-            // Language Toggle: Esc or Ctrl+M
             if (
               event.key === 'Escape' ||
               ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'm')
@@ -163,20 +169,16 @@ export const LekhaInput = Extension.create<LekhaOptions>({
               return true
             }
 
-            // 2. LANGUAGE CHECK
             if (engine.isEnglish.value) {
               return false
             }
 
-            // 3. BLOCK OS IME COMPOSITION KEYS
-            // When isComposing is true with key 'Process', the OS Bengali/Hindi IME has
-            // intercepted the keystroke. Block it to prevent raw composition text insertion.
+            // Block OS IME keystrokes (isComposing + 'Process') to prevent raw composition text.
             if (event.isComposing && event.key === 'Process') {
               event.preventDefault()
               return true
             }
 
-            // 4. BENGALI TYPING LOGIC
             const isSingleChar = event.key.length === 1
             const isEditingKey = event.key === 'Backspace' || event.key === 'Delete'
             const isNavigationKey =
@@ -190,14 +192,12 @@ export const LekhaInput = Extension.create<LekhaOptions>({
               event.key === 'PageUp' ||
               event.key === 'PageDown'
 
-            // Reset engine tracking state on navigation so stale pre-kar/phonetic
-            // state from a previous position doesn't corrupt the next word typed.
             if (isNavigationKey) {
               engine.resetState()
               return false
             }
 
-            // Android / virtual keyboards send 'Unidentified' — beforeinput carries the actual char.
+            // Virtual keyboards send 'Unidentified' — beforeinput carries the actual char.
             if (event.key === 'Unidentified') return false
 
             if (!isSingleChar && !isEditingKey) {
@@ -212,20 +212,16 @@ export const LekhaInput = Extension.create<LekhaOptions>({
             const $from = doc.resolve(from)
             const $to = hasSelection ? doc.resolve(to) : $from
 
-            // Only handle single-block (inline) selections; cross-block is too complex
             if (hasSelection && $from.parent !== $to.parent) {
               return false
             }
 
             const textBefore = $from.parent.textBetween(0, $from.parentOffset)
-            // Skip over the selected region so typed characters replace the selection
             const textAfterOffset = hasSelection ? $to.parentOffset : $from.parentOffset
             const textAfter = $from.parent.textBetween(textAfterOffset, $from.parent.content.size)
 
-            // Sync engine to current editor state
             engine.setText(textBefore + textAfter, textBefore.length)
 
-            // For selection + Backspace/Delete: delete the selected region
             if (hasSelection && isEditingKey) {
               event.preventDefault()
               const startOfBlock = from - $from.parentOffset
