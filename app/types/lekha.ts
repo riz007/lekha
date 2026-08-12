@@ -6,8 +6,9 @@ export interface LayoutDefinition {
   id: LayoutId
   name: string
   type: LayoutType
+  /** Short description shown in the layout picker. */
+  hint: string
   mappings: Record<string, string>
-  complexRules?: Record<string, string>
   supportsDirectKeyInput: boolean
 }
 
@@ -20,15 +21,22 @@ export interface ProcessKeyInput {
   ctrlKey?: boolean
   metaKey?: boolean
   altKey?: boolean
+  shiftKey?: boolean
 }
 
-export interface ProcessKeyResult {
-  accepted: boolean
-  text: string
-  cursor: number
-  toggledLanguage?: boolean
+/** Text on either side of the caret, as a plain string with aligned offsets. */
+export interface KeyContext {
+  before: string
+  after: string
+}
 
-  // Surgical update info (optional for now)
-  insertText?: string
-  replaceCount?: number
+/**
+ * A local edit around the caret. `deleteBefore`/`deleteAfter` are UTF-16 unit
+ * counts measured from the caret outwards; `insert` replaces them.
+ */
+export interface EditResult {
+  accepted: boolean
+  deleteBefore: number
+  deleteAfter: number
+  insert: string
 }

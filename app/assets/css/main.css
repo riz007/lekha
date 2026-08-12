@@ -47,11 +47,8 @@
     #030712;
 }
 
-.lekha-editor textarea, .ProseMirror {
-  font-feature-settings: "kern" 1, "liga" 1;
+.ProseMirror {
+  /* Bengali needs its ligature and kerning tables to render conjuncts at all. */
+  font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
   line-height: 1.8;
-}
-
-.ProseMirror p {
-  margin-bottom: 1em;
 }

@@ -42,12 +42,10 @@ const bijoyMap: Record<string, string> = {
   x: 'ও',
   '`': '‌',
   '\\': 'ৎ',
-  ';': '；',
-  ',': '，',
+  ';': ';',
+  ',': ',',
   '.': '।',
   '/': '/',
-  '[': ']',
-  ']': '}',
 
   // Shift
   J: 'খ',
@@ -122,8 +120,8 @@ const probhatMap: Record<string, string> = {
   x: 'ষ',
   y: 'য়',
   z: 'য',
-  ';': '；',
-  ',': '，',
+  ';': ';',
+  ',': ',',
   '.': '।',
   '[': 'ৎ',
   ']': '।',
@@ -164,7 +162,7 @@ const probhatMap: Record<string, string> = {
   '}': 'ৈ',
   '|': 'ঃ',
   '~': '‌',
-  '?': '？',
+  '?': '?',
 }
 
 // AUTHORITATIVE UNIJOY MAPPING
@@ -313,6 +311,7 @@ export const LAYOUTS: Record<LayoutId, LayoutDefinition> = {
     id: 'bijoy',
     name: 'Bijoy',
     type: 'fixed',
+    hint: 'বাংলাদেশের সবচেয়ে প্রচলিত ফিক্সড লেআউট',
     mappings: bijoyMap,
     supportsDirectKeyInput: true,
   },
@@ -320,6 +319,7 @@ export const LAYOUTS: Record<LayoutId, LayoutDefinition> = {
     id: 'unijoy',
     name: 'UniJoy',
     type: 'fixed',
+    hint: 'বিজয়ের সাথে ইউনিকোড কম্পোজিট স্বরচিহ্ন',
     mappings: unijoyMap,
     supportsDirectKeyInput: true,
   },
@@ -327,6 +327,7 @@ export const LAYOUTS: Record<LayoutId, LayoutDefinition> = {
     id: 'somewherein',
     name: 'SomewhereIn',
     type: 'fixed',
+    hint: 'জনপ্রিয় বিকল্প ফিক্সড লেআউট',
     mappings: somewhereInMap,
     supportsDirectKeyInput: true,
   },
@@ -334,6 +335,7 @@ export const LAYOUTS: Record<LayoutId, LayoutDefinition> = {
     id: 'avro',
     name: 'Avro Phonetic',
     type: 'phonetic',
+    hint: 'ইংরেজি বানানে বাংলা লিখুন — ami → আমি',
     mappings: avroMap,
     supportsDirectKeyInput: true,
   },
@@ -341,6 +343,7 @@ export const LAYOUTS: Record<LayoutId, LayoutDefinition> = {
     id: 'boishakhi',
     name: 'Baishakhi',
     type: 'fixed',
+    hint: 'বিজয়-সঙ্গতিপূর্ণ আঞ্চলিক ভ্যারিয়েন্ট',
     mappings: bijoyMap,
     supportsDirectKeyInput: true,
   },
@@ -348,6 +351,7 @@ export const LAYOUTS: Record<LayoutId, LayoutDefinition> = {
     id: 'probhat',
     name: 'Probhat',
     type: 'fixed',
+    hint: 'ওপেনবাংলা/একুশে ইউনিকোড স্ট্যান্ডার্ড',
     mappings: probhatMap,
     supportsDirectKeyInput: true,
   },
@@ -358,3 +362,44 @@ export const LAYOUT_OPTIONS = Object.values(LAYOUTS).map(layout => ({
   value: layout.id,
   disabled: !layout.supportsDirectKeyInput,
 }))
+
+/**
+ * Physical key rows, used to draw the on-screen keyboard reference. Keys are
+ * listed by their US QWERTY legend, which is what every Bijoy-family layout is
+ * defined against.
+ */
+export const KEYBOARD_ROWS: string[][] = [
+  ['`', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '='],
+  ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\\'],
+  ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', "'"],
+  ['z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/'],
+]
+
+const SHIFTED: Record<string, string> = {
+  '`': '~',
+  '1': '!',
+  '2': '@',
+  '3': '#',
+  '4': '$',
+  '5': '%',
+  '6': '^',
+  '7': '&',
+  '8': '*',
+  '9': '(',
+  '0': ')',
+  '-': '_',
+  '=': '+',
+  '[': '{',
+  ']': '}',
+  '\\': '|',
+  ';': ':',
+  "'": '"',
+  ',': '<',
+  '.': '>',
+  '/': '?',
+}
+
+/** The key that the same physical key produces with Shift held. */
+export function shiftedKey(key: string): string {
+  return SHIFTED[key] ?? key.toUpperCase()
+}
